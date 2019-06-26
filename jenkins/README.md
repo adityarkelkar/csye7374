@@ -1,4 +1,4 @@
-## Jenkins Deployment for CI/CD
+# Jenkins Deployment for CI/CD
 
 1. Created a kops cluster
 2. Deploy jenkins on it. Wait for loadbalancer to come up
