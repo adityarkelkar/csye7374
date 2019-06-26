@@ -1,0 +1,16 @@
+---
+# tasks file for prereqs
+
+- name: update system
+  shell: apt update
+  become: yes
+
+- name: List all aws s3 buckets, check aws cli
+  command: aws s3 ls
+  
+- name: List all docker images
+  command: '{{ item }}'
+  with_items:
+    - docker ps -al
+    - docker images
+  become: yes

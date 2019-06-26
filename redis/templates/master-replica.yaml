@@ -1,0 +1,83 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+      role: master
+      tier: backend
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+      labels:
+        app: redis
+        role: master
+        tier: backend
+    spec:
+      volumes:
+        - name: host-sys
+          hostPath:
+            path: /sys
+      initContainers:
+        - name: disable-thp
+          image: docker.io/tata480/csye7374:redismaster
+          volumeMounts:
+            - name: host-sys
+              mountPath: /host-sys
+          command: ["sh", "-c", "echo never > /host-sys/kernel/mm/transparent_hugepage/enabled"]
+      containers:
+      - name: redis-master
+        image: docker.io/tata480/csye7374:redismaster
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-pass
+              key: db.pass
+        - name: REDIS-MASTER
+          value: "true"
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        ports:
+          - name: redis
+            containerPort: 6379
+        resources:
+          limits:
+            cpu: "0.1"
+            memory: "32Mi"
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        volumeMounts:
+          - mountPath: /redis-master-data
+            name: host-sys
+      - name: sentinel
+        image: k8s.gcr.io/redis:v1
+        env:
+          - name: redis-sentinel
+            value: "true"
+          - name: SENTINEL
+            value: "true"
+        ports:
+          - name: sentinel
+            containerPort: 26379
+      - name: redis-exporter
+        image: oliver006/redis_exporter:v0.21.1
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: 32Mi
+        ports:
+        - containerPort: 9121
+          name: redis-metrics

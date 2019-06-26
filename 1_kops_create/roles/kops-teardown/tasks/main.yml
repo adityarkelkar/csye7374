@@ -1,0 +1,6 @@
+---
+# tasks file for kops-teardown
+
+- name: Teardown a k8s cluster
+  command: kops delete cluster --name {{ cluster_name }} --state {{ kops_state_store }} --yes
+  become: yes

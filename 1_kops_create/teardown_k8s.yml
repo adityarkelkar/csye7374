@@ -1,0 +1,14 @@
+---
+# tasks file for teardown k8s
+
+- hosts: localhost
+  become: true
+  tasks:
+  - include_role:
+      name: kops-teardown
+
+  vars:
+    cluster_zone: us-east-1a
+    node_count: 3
+    cluster_name: k8s.local
+    kops_state_store: s3://k8slab.csye6225-spring2018-kelkaradi.me

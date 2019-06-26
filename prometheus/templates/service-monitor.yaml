@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+    prometheus: kube-prometheus
+  namespace: monitoring
+spec:
+  jobLabel: app
+  selector:
+    matchLabels:
+      app: redis
+  namespaceSelector:
+    matchNames:
+    - default
+  endpoints:
+  - port: metrics
+    interval: 30s
+    honorLabels: true

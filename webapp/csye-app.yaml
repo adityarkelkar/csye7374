@@ -1,0 +1,71 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: csye7374
+  labels:
+    app: csye7374
+spec:
+  selector:
+    matchLabels:
+      app: csye7374
+      tier: csye7374
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+  template:
+    metadata:
+      labels:
+        app: csye7374
+        tier: csye7374
+    spec:
+      containers:
+      - name: csye7374
+        imagePullPolicy: Always
+        image: docker.io/tata480/csye7374:nodeapp
+        volumeMounts:
+          - name: myvolume
+            mountPath: "/etc/secrets"
+            readOnly: true
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-pass
+              key: db.pass
+        - name: GET_HOSTS_FROM
+          value: dns
+        - name: GREETING
+          value: "Warm greetings to"
+        - name: HONORIFIC
+          value: "The Most Honorable"
+        - name: NAME
+          value: "Kubernetes"
+        - name: HIT_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: csye7374-port
+              key: port
+        - name: REDISHOST
+          valueFrom:
+            configMapKeyRef:
+              name: redishost
+              key: REDISHOST
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+        - name: myvolume
+          secret:
+            secretName: db-pass

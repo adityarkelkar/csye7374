@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: csye7374-nodeport
+spec:
+  type: NodePort
+  ports:
+  - port: 6379
+    nodePort: 30123
+    name: redis
+  - port: 26379
+    nodePort: 30124
+    name: sentinel
+  selector:
+    app: redis

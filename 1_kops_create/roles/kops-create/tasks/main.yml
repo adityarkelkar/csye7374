@@ -1,0 +1,13 @@
+---
+# tasks file for kops-create
+
+- name: Run kops create command
+  command: kops create cluster --zones {{ cluster_zone }} --node-count={{ node_count }} --node-size t2.micro --master-size t2.micro --name {{ cluster_name }} --state {{ kops_state_store }} --yes
+  become: yes
+
+- name: Validating cluster
+  command: kops validate cluster --name {{ cluster_name }} --state {{ kops_state_store }}
+  register: result
+  until: result.stdout.find("is ready") != -1
+  retries: 20
+  delay: 60

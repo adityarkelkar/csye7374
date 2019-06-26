@@ -1,0 +1,6 @@
+---
+# tasks file for kops-dashboard
+
+- name: "Deploy dashboard: Run the deploy script"
+  become: yes
+  shell: sh {{ playbook_dir }}/kops_create/k8s/deployscript.sh
